@@ -8,7 +8,7 @@ from Database.interface_database import *
 class DatabaseTemplate(metaclass=ABCMeta):
     def __init__(self):
         self.database_name = ""
-        self.connection = sqlite3.connect("")
+        self.connection = sqlite3.connect(self.database_name)
         self.cursor = self.connection.cursor()
 
     def build_database(self, name):

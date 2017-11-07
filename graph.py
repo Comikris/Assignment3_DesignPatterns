@@ -4,7 +4,6 @@ import time
 
 
 # design kris, coded by Brendan
-
 class Graph:
 
     def __init__(self, database):

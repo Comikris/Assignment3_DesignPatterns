@@ -4,17 +4,37 @@ import pickle
 import os
 import sys
 import data_validator
-from datetime import *
 
-# Kris Little design
-class FileHandler(IFileHandler):
-    def __init__(self):
-        self.valid = True
-        self.validator = data_validator.DataValidator()
 
-    # Kris
-    def load_file(self, file):
-        # put error handling here
+class FileFactory(metaclass=ABCMeta):
+    @abstractmethod
+    def make_file_operator(self):
+        pass
+
+
+class FactoryWriter(FileFactory):
+    def make_file_operator(self):
+        return FileWriter()
+
+
+class FactorySaver(FileFactory):
+    def make_file_operator(self):
+        return FileSaver()
+
+
+class FileProduct(object):
+    def status(self, msg):
+        pass
+
+    def load(self, file, validator):
+        pass
+
+    def save(self, file, data):
+        pass
+
+
+class FileWriter(FileProduct):
+    def load(self, file, validator):
         contents = []
         try:
             the_file = open(file, 'r')
@@ -25,11 +45,12 @@ class FileHandler(IFileHandler):
                 line = tuple(line.replace('\n', "").split(','))
                 contents.append(line)
             the_file.close()
-            contents = self.validator.start(contents)
+            contents = validator.start(contents)
             return contents
 
-    # Kris
-    def write_file(self, file, data):
+
+class FileSaver(FileProduct):
+    def save(self, file, data):
         the_file = open(file, 'w')
         string = ""
         for l in data:
@@ -43,6 +64,31 @@ class FileHandler(IFileHandler):
             string += "\n"
         the_file.write(string)
         the_file.close()
+
+
+# Kris Little design
+class FileHandler(IFileHandler):
+    def __init__(self):
+        self.valid = True
+        self.validator = data_validator.DataValidator()
+        self.fileSaver = self.build_file_operator("save")
+        self.fileWriter = self.build_file_operator("write")
+
+    def build_file_operator(self, arg):
+        if arg == "save":
+            return FileSaver()
+        elif arg == "write":
+            return FileWriter()
+
+    # Kris
+    def load_file(self, file):
+        # put error handling here
+        contents = self.fileWriter.load(file, self.validator)
+        return contents
+
+    # Kris
+    def write_file(self, file, data):
+        self.fileSaver.save(file, data)
 
     # Brendan Holt
     # Used to pickle the loaded graphs to default pickle file
