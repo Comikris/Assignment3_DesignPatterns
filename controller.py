@@ -1,7 +1,6 @@
 import fnmatch
 from interpreter import *
 
-
 class Controller:
     def __init__(self, view, args):
         self.view = view

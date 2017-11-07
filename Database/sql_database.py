@@ -5,11 +5,31 @@ import sqlite3
 from Database.interface_database import *
 
 
-class SQLDatabase(IDatabase):
-    def __init__(self, database_name):
-        self.database_name = database_name
-        self.connection = sqlite3.connect(self.database_name)
+class DatabaseTemplate(metaclass=ABCMeta):
+    def __init__(self):
+        self.database_name = ""
+        self.connection = sqlite3.connect("")
         self.cursor = self.connection.cursor()
+
+    def build_database(self, name):
+        self.set_database_name(name)
+        self.set_database_connection()
+        self.set_database_cursor()
+
+    def set_database_name(self, name):
+        self.database_name = name
+
+    def set_database_connection(self):
+        self.connection = sqlite3.connect(self.database_name)
+
+    def set_database_cursor(self):
+        self.cursor = self.connection.cursor()
+
+
+class SQLDatabase(IDatabase, DatabaseTemplate):
+    def __init__(self, database_name):
+        super().__init__()
+        self.build_database(database_name)
 
     def backup_database(self):
         self.execute_sql("""select * from employee""")
